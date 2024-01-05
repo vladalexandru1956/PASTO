@@ -13,7 +13,8 @@
 %ordonez pe toate pentru ca n-am destula memorie. Dar in 2D?
 
 %7. La fel la Haar? Ce componente plotez?
-
+%#ok<*AGROW>
+%#ok<*INUSD>
 classdef    functii 
     methods     ( Static = true )
 
@@ -22,11 +23,13 @@ classdef    functii
             A = db(abs(imagine_fft));
             colormap jet
             imagesc(A)
-
+            title("Spectrul imaginii b/w ")
+            
             ox = (0:n-1) ./ n;
             oy = (0:m-1) ./ m;
             
             figure;
+            title("Spectrul imaginii b/w (3D)")
             [X, Y] = meshgrid(ox, oy);
             colormap jet
             h = surf(X, Y, A, 'FaceColor','interp');
@@ -42,6 +45,7 @@ classdef    functii
             B = db(abs(imagine_fft(:, :, 3)));
                 
             figure
+            title("Spectrul imaginii rgb")
             colormap jet
             subplot(3, 1, 1)
             imagesc(R)
@@ -54,10 +58,11 @@ classdef    functii
             oy = (0:m-1) ./ m;
 
             figure
+            title("Spectrul imaginii rgb (3D)")
             subplot(3, 1, 1)
             [X, Y] = meshgrid(ox, oy);
             colormap jet
-            h = surf(X, Y, R, 'FaceColor','interp');
+            h = surf(Y, X, R, 'FaceColor','interp');
             set(h,'LineStyle','none')
             set(gca,'Xdir','reverse','Ydir','reverse')
 
@@ -88,7 +93,7 @@ classdef    functii
                 P1 = db(P1);
             end
 
-            f = Fs/length(audio_fft)*(0:(length(audio_fft)/2));
+            f = Fs/length(audio_fft) * (0:(length(audio_fft)/2));
             f = f / Fs;
 
             figure
@@ -142,11 +147,47 @@ classdef    functii
             figure
             t = (0:length(orig)-1)*T;
             plot(t,er)
+            title("Eroarea dintre semnalul original si cel reconstruit")
             xlabel("t (seconds)")
             ylabel("y(t)")
             gtext(['Norma erorii: ' num2str(norma_eroare)]);
 
         end
+
+        function plot_1d_segmente_hwt(bucatiTransf, Transf, lungSegment)
+            numSegments = length(bucatiTransf) / lungSegment;
+
+            % Reshape vectorul într-o matrice 2D
+            bucatiTransf = reshape(bucatiTransf, [lungSegment, numSegments]);
+
+            % Convertim la valorile absolute pentru vizualizare
+            bucatiTransf = abs(bucatiTransf);
+            % Crearea figurii
+            figure
+            colormap jet
+            ox = (0:numSegments-1); % Indexul segmentului
+            oy = (0:lungSegment-1); % Indexul coeficientului în segment
+
+            [X, Y] = meshgrid(oy, ox);
+            h = surf(X, Y, bucatiTransf', 'FaceColor','interp');
+            colorbar
+            title("Magnitude of " + Transf + " Spectrum")
+            % xlim([0 lungSegment-1])
+            % ylim([0 numSegments-1])
+            % Setarea etichetelor axelor
+            xlabel("Index coeficient " + Transf)
+            ylabel("Index Segment")
+            zlabel("Magnitudine coeficient " + Transf)
+
+            % Îndepărtarea liniilor de pe suprafață pentru claritate
+            set(h,'LineStyle','none')
+
+            % Inversarea direcției axelor pentru a se potrivi cu convenția obișnuită
+            set(gca,'Xdir','reverse','Ydir','reverse')
+        end
+
+
+
 
         function plot_eroare_2d(orig, rec)
             ox = (0:size(orig, 1)-1);
@@ -206,13 +247,12 @@ classdef    functii
             end
         end
 
-        function [fftizat_jum, energie, procente_coef] = proc_energie(fftizat, Fs)
+        function [fftizat_jum, energie, procente_coef] = proc_energie_fft(fftizat, Fs)
             fftizat_jum = fftizat;
             fftizat_jum = fftizat_jum(1:length(fftizat)/2+1);
             fftizat_jum(2:end-1) = 2*fftizat_jum(2:end-1);
 
             energie = abs(fftizat_jum).^2;
-       %     energie_totala = sum(energie) * (Fs/length(fftizat_jum));
             energie_totala = sum(energie);
 
             procente = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
@@ -240,19 +280,11 @@ classdef    functii
         end
 
         function [cumulative_energy, procente_coef] = proc_energie_klt(D)
-            % Normalize eigenvalues to get proportion of variance
             proportion_variance = D / sum(D);
-            
-            % Compute cumulative variance
             cumulative_energy = cumsum(proportion_variance);
-        
-            % Define percentage thresholds
             procente = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
-            
-            % Find number of components for each threshold
             procente_coef = arrayfun(@(x) find(cumulative_energy >= x, 1, 'first'), procente);
-            % [D, ~] = sort(diag(D), "descend");
-            % Plotting
+
             figure;
             plot(cumulative_energy);
             xlabel('Number of Components');
@@ -278,7 +310,7 @@ classdef    functii
             end
         end
 
-        function    [audio, audio_fft, Fs] = fft1d(x)
+        function [audio, audio_fft, Fs] = fft1d(x)
             [audio, Fs] = audioread(x);
             audio_fft = fft(audio);
 
@@ -287,6 +319,7 @@ classdef    functii
             figure
             t = (0:length(audio)-1)*T;
             plot(t,audio)
+            title("Semnalul audio original")
             xlabel("t (seconds)")
             ylabel("y(t)")
             
@@ -300,6 +333,7 @@ classdef    functii
             figure
             t = (0:length(y)-1)*T;
             plot(t,y)
+            title("Semnalul audio reconstruit")
             xlabel("t (seconds)")
             ylabel("y(t)")
         end
@@ -308,7 +342,7 @@ classdef    functii
             imagine = imread(image);
             [~, ~, ch] = size(imagine);
             
-            imagine_fft=fft2(double(imagine));
+            imagine_fft = fft2(double(imagine));
 
             if(ch == 3)
                 functii.plot_rgb(imagine_fft);
@@ -322,6 +356,7 @@ classdef    functii
             y = real(y);
             
             figure
+            title("Imaginea reconstruita")
             imagesc(abs(y))
             
             if(size(y, 3) ~= 3)
@@ -333,7 +368,6 @@ classdef    functii
             xM = mean(x);
             x_centr = x - xM;
             [p_x, ~] = xcorr(x_centr, 'biased');
-            % p_x = p_x / p_x(lags == 0); % Normalize by the value at lag 0
             
             R = fftshift(p_x); % in mod interesant, norma intre original si reconstruit da mai mica 
                                % daca fac fftshift
@@ -350,18 +384,7 @@ classdef    functii
 
         function [audio, y, D, Vm, xM, Fs] = tkl1d(x)
             [audio, Fs] = audioread(x);
-
-   %         bucati = [];
-   %         rest = [];
-
-   %         if size(audio, 1) > 1000
-   %             for i = 1 : size(audio, 1) / 1000
-   %                 bucati{i} = audio((i-1)*1000+1:i*1000);
-   %             end
-   %             rest = audio(i*1000+1:end);
-   %         end
             [bucati, rest] = functii.segmentare_bucati(audio, 1000);
-
 
             if(~isempty(bucati))
                 for i = 1 : size(bucati, 2)
@@ -381,13 +404,10 @@ classdef    functii
         function [imagine, y, Vm, xM, xdim, ydim] = tkl2d(image)
             imagine = imread(image);
             imagine = double(imagine);
-            [xdim, ydim, ch] = size(imagine);
-            % ImgVector = Img(:);
-            % % Or:
+            [xdim, ydim, ~] = size(imagine);
             imgVec = reshape(imagine, 1, []);
-            % size(imgVec)
             [bucati, rest] = functii.segmentare_bucati(imgVec', 1000);
-            % size(bucati)
+
             if(~isempty(bucati))
                 for i = 1 : size(bucati, 2)
                     [y{i}, D{i}, Vm{i}, xM{i}] = functii.proc_tkl1d(bucati{i}); 
@@ -396,9 +416,6 @@ classdef    functii
                     [y{i+1}, D{i+1}, Vm{i+1}, xM{i+1}] = functii.proc_tkl1d(rest);
                 end
             end
-            % y = cat(1, y{:});
-            % img = reshape(y, xdim, ydim);
-            % functii.plot_gray(img)
         end
 
         function y = inv_tkl1d(x, Vm, xM)
@@ -407,13 +424,6 @@ classdef    functii
             end
 
             y = cat(1, y{:});
-           % T = 1/Fs;
-
-           % figure
-           % t = (0:length(y)-1)*T;
-           % plot(t,y)
-           % xlabel("t (seconds)")
-           % ylabel("y(t)")
         end
 
         function y = inv_tkl2d(x, Vm, xM, xdim, ydim)
@@ -507,7 +517,7 @@ classdef    functii
             functii.plot_1d_segmente(coef, "Haar2D")
         end
 
-        function x = inv_haar2d(huri, r, huri_col, r_col)
+        function x = inv_haar2d(huri, r, huri_col, r_col) 
             h = [1 1] / 2;
             g = [1 -1] / 2;
 
@@ -525,5 +535,92 @@ classdef    functii
             
     
         end 
+      
+        function y = proc_wht1d(x, walshMatrix)
+            y = walshMatrix * x;
+        end
+
+        function [audio, y, Fs, walshMatrix] = wht1d(x, lungSegment)
+            if log2(lungSegment) ~= floor(log2(lungSegment))
+                error('Lungimea segmentelor nu este o putere a lui 2');
+            end
+
+            [audio, Fs] = audioread(x);
+            
+            order = log2(lungSegment);
+            permMatrix = hada2walsh_matrix(order);
+            H = functii.hadamardMatrix(lungSegment);
+
+            walshMatrix = permMatrix * H;
+
+            [bucati, rest] = functii.segmentare_bucati(audio, lungSegment);
+
+            if(~isempty(bucati))
+                for i = 1 : size(bucati, 2)
+                    y{i} = functii.proc_wht1d(bucati{i}, walshMatrix); 
+                end
+                if(~isempty(rest))
+                    %%Padding cu 0-uri
+                    rest = [rest; zeros(lungSegment - length(rest), 1)];
+                    y{i+1} = functii.proc_wht1d(rest, walshMatrix);
+                end
+            end
+        end
+
+        function H = hadamardMatrix(order)
+            if order == 1
+                H = 1;
+            else
+                H_half = functii.hadamardMatrix(order / 2);
+                H = [H_half, H_half; H_half, -H_half];
+            end
+        end
+
+        function y = inv_wht1d(x, walshMatrix)
+            N = size(walshMatrix, 1);
+            inverseMatrix = (1/N) * walshMatrix';  
+        
+            for i = 1:size(x, 2)
+                y_segment_inv = inverseMatrix * x{i};
+                y_inv{i} = y_segment_inv;
+            end
+        
+            y = cat(1, y_inv{:});
+        end
+        
+        function [y, orig, walshMatrix] = wht2d(image, lungSegment)
+            %reshape image in vector with columns as segments
+            orig = imread(image);
+            imagine = double(orig);
+            imagine = reshape(imagine, 1, [])';
+            H = functii.hadamardMatrix(lungSegment);
+            permMatrix = hada2walsh_matrix(log2(lungSegment));
+            walshMatrix = permMatrix * H;
+            N = size(walshMatrix, 1);
+            walshMatrix = (1/N) * walshMatrix';
+
+            size(imagine)
+            [bucati, rest] = functii.segmentare_bucati(imagine, slungSegment);
+
+            if(~isempty(bucati))
+                for i = 1 : size(bucati, 2)
+                    y{i} = functii.proc_wht1d(bucati{i}, walshMatrix); 
+                end
+                if(~isempty(rest))
+                    %%Padding cu 0-uri
+                    rest = [rest; zeros(lungSegment - length(rest), 1)];
+                    y{i+1} = functii.proc_wht1d(rest, walshMatrix);
+                end
+            end
+
+            y = cat(1, y{:});
+
+            
+
+        end
+
+
+
+
     end
 end
