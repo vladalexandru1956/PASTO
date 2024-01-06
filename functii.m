@@ -432,7 +432,7 @@ classdef    functii
         end
 
         function [y, huri, r] = proc_haar1d(x)
-            L = log2(size(x));
+            L = floor(log2(size(x, 1)));
 
             h = [1 1];
             g = [-1 1];
@@ -444,6 +444,12 @@ classdef    functii
                 r = conv(x, h);
                 r = r(2:2:end);
                 x = r;
+
+                if(size(huri{i}, 1) < size(r, 1))
+                    huri{i} = [huri{i}; 0];
+                elseif(size(huri{i}, 1) > size(r, 1))
+                    r = [r; 0];
+                end
             end
 
             huriT = cell2mat(huri');
@@ -483,8 +489,8 @@ classdef    functii
                 rCurent = r{i};
                 for j = size(huri{i}, 2) : -1 : 1 
 
-                    if(size(functii.interpolare(rCurent), 1) ~= size(functii.interpolare(huri{i}{j}), 1))
-                        huri{i}{j} = [huri{i}{j}; zeros((size(functii.interpolare(rCurent), 1) - size(functii.interpolare(huri{i}{j}), 1)) / 2, 1)];
+                    if(size(huri{i}{j}, 1) < size(rCurent, 1))
+                        rCurent = rCurent(1:end-1);
                     end
 
                     r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri{i}{j}), g);
@@ -532,8 +538,6 @@ classdef    functii
                 end
                 x{i} = rCurent;
             end
-            
-    
         end 
       
         function y = proc_wht1d(x, walshMatrix)
@@ -614,9 +618,6 @@ classdef    functii
             end
 
             y = cat(1, y{:});
-
-            
-
         end
 
 
