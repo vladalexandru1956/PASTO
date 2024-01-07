@@ -13,6 +13,20 @@ filePath = fullfile(path, file);
  % z = inv_fft2d(fftizata);
  % plot_eroare_2d(orig, z)
 
+%[orig, y, huri, r, Fs] = haar1d(filePath, 4096);
+%z = inv_haar1d(huri, r);
+%norm(orig-z(1:size(orig,1)))
+
+[orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
+[z, X_inter, x_inter] = inv_haar2d(huri, r, huri_col, r_col); 
+figure
+imagesc(uint8(z))
+figure
+imagesc(uint8(orig))
+%colormap('gray')
+plot_eroare_2d(orig, z)
+
+
 
 % [orig, y, D, Vm, xM, Fs] = tkl1d(filePath);
 % z = inv_tkl1d(y, Vm, xM);
