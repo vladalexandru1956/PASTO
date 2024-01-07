@@ -512,7 +512,7 @@ classdef    functii
             for i = 1 : ch
                 subplot(2, ch, i)
                 functii.plot_1d_segmente(coef_col{i}, "Haar2D")
-                subplot(2, ch, 2*i+(ch-i))
+                subplot(2, ch, i+ch)
                 functii.plot_1d_segmente(coef{i}, "Haar2D")
             end
         end
@@ -555,9 +555,6 @@ classdef    functii
         end
 
         function [x, X_inter, x_inter] = inv_haar2d(huri, r, huri_col, r_col) 
-        %    h = [1 1] / 2;
-        %    g = [1 -1] / 2;
-        
             for i = 1 : size(huri, 2)
                 [x{i}, X_inter{i}, x_inter{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
             end
