@@ -1,18 +1,3 @@
-%% DE INTREBAT:
-%1. Ce se ploteaza: abs(fft) sau abs(fft)^2?
-
-%2. Cand calculam cât la sută din coeficienti compun pragurile alea de
-%energie, procentul e din ce, din toți coeficienții FFT, sau doar din cei
-%ai primei jumătăți?
-
-%3. Să scalăm FFT-ul cu Fs sau Nr_esantioane? sau deloc?
-
-%4. Cum plotam procentele de energie in 2D?
-
-%6. Cum sa plotez componentele TKL-ului? Valoriile proprii? Nu pot sa le
-%ordonez pe toate pentru ca n-am destula memorie. Dar in 2D?
-
-%7. La fel la Haar? Ce componente plotez?
 %#ok<*AGROW>
 %#ok<*INUSD>
 classdef    functii 
@@ -119,7 +104,6 @@ classdef    functii
             bucatiTransf = cell2mat(bucatiTransf);
        %     bucatiTransf = abs(bucatiTransf);
             
-            figure
             [X, Y] = meshgrid(oy, ox);
             colormap jet
             h = surf(X, Y, bucatiTransf', 'FaceColor','interp');
@@ -186,9 +170,6 @@ classdef    functii
             set(gca,'Xdir','reverse','Ydir','reverse')
         end
 
-
-
-
         function plot_eroare_2d(orig, rec)
             ox = (0:size(orig, 1)-1);
             oy = (0:size(orig, 2)-1);
@@ -206,43 +187,43 @@ classdef    functii
                  text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er, 'all'))], 'Rotation',+15);
                  colorbar;
             else
-                er1 = imabsdiff(orig(:, :, 1), rec(:, :, 1));
-                er2 = imabsdiff(orig(:, :, 2), rec(:, :, 2));
-                er3 = imabsdiff(orig(:, :, 3), rec(:, :, 3));
+                er1 = imabsdiff(orig(:, :, 1), rec(1:size(orig, 1), 1:size(orig,2), 1));
+                er2 = imabsdiff(orig(:, :, 2), rec(1:size(orig, 1), 1:size(orig,2), 2));
+                er3 = imabsdiff(orig(:, :, 3), rec(1:size(orig, 1), 1:size(orig,2), 3));
                 
                 figure
 
                 subplot(3, 1, 1)
                 [X, Y] = meshgrid(ox, oy);
                 colormap jet
-                h = surf(X, Y, er1, 'FaceColor','interp');
+                h = surf(X, Y, er1', 'FaceColor','interp');
                 set(h,'LineStyle','none')
                 xlabel('Index Linie')
                 ylabel('Index Coloana')
                 set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er1, 'all'))], 'Rotation',+15);
+                text(119,0, 1, ['Norma erorii: ' num2str(sum(er1, 'all'))]);
                 colorbar;
 
                 subplot(3, 1, 2)
                 [X, Y] = meshgrid(ox, oy);
                 colormap jet
-                h = surf(X, Y, er2, 'FaceColor','interp');
+                h = surf(X, Y, er2', 'FaceColor','interp');
                 set(h,'LineStyle','none')
                 xlabel('Index Linie')
                 ylabel('Index Coloana')
                 set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er2, 'all'))], 'Rotation',+15);
+                text(119,0, 1, ['Norma erorii: ' num2str(sum(er2, 'all'))]);
                 colorbar;
 
                 subplot(3, 1, 3)
                 [X, Y] = meshgrid(ox, oy);
                 colormap jet
-                h = surf(X, Y, er3, 'FaceColor','interp');
+                h = surf(X, Y, er3', 'FaceColor','interp');
                 set(h,'LineStyle','none')
                 xlabel('Index Linie')
                 ylabel('Index Coloana')
                 set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er3, 'all'))], 'Rotation',+15);
+                text(119,0, 1, ['Norma erorii: ' num2str(sum(er3, 'all'))]);
                 colorbar;
             end
         end
@@ -396,7 +377,8 @@ classdef    functii
             else
                 [y, D, Vm, xM] = functii.proc_tkl1d(audio);
             end
-
+            
+            figure
             functii.plot_1d_segmente(y, "TKL")
             
         end
@@ -471,7 +453,8 @@ classdef    functii
                     [y{i}, huri{i+1}, r{i+1}] = functii.proc_haar1d(rest);
                 end
             end
-
+            
+            figure
             functii.plot_1d_segmente(y, "Haar")
         end
 
@@ -502,27 +485,39 @@ classdef    functii
             x_intarziat = cat(1, x_intarziat{:});
         end
 
-        function [imagine, coef, huri, r, huri_col, r_col] = haar2d(image)
-            imagine = imread(image);
-            imagine = double(imagine);
+        function [coef, huri, r, coef_col, huri_col, r_col] = proc_haar2d(imagine)
             [~, ydim, ~] = size(imagine);
-
             for col = 1 : ydim
                 colCurenta = imagine(:, col);
                 [coef_col{col}, huri_col{col}, r_col{col}] = functii.proc_haar1d(colCurenta);
             end
+            coef_col_temp = cell2mat(coef_col);
 
-            functii.plot_1d_segmente(coef_col, "Haar2D")
-            coef_col = cell2mat(coef_col);
-
-            for row = 1 : size(coef_col, 1)
-                rowCurent = coef_col(row, :)';
+            for row = 1 : size(coef_col_temp, 1)
+                rowCurent = coef_col_temp(row, :)';
                 [coef{row}, huri{row}, r{row}] = functii.proc_haar1d(rowCurent);   
             end
-            functii.plot_1d_segmente(coef, "Haar2D")
         end
 
-        function [x, X_inter, x_inter] = inv_haar2d(huri, r, huri_col, r_col) 
+        function [imagine, coef, huri, r, huri_col, r_col] = haar2d(image)
+            imagine = imread(image);
+            imagine = double(imagine);
+            [~, ~, ch] = size(imagine);
+
+            for i = 1 : ch
+                [coef{i}, huri{i}, r{i}, coef_col{i}, huri_col{i}, r_col{i}] = functii.proc_haar2d(imagine(:, :, i));
+            end
+            
+            figure
+            for i = 1 : ch
+                subplot(2, ch, i)
+                functii.plot_1d_segmente(coef_col{i}, "Haar2D")
+                subplot(2, ch, 2*i+(ch-i))
+                functii.plot_1d_segmente(coef{i}, "Haar2D")
+            end
+        end
+
+        function [x, X_inter, x_inter] = proc_inv_haar2d(huri, r, huri_col, r_col)
             h = [1 1] / 2;
             g = [1 -1] / 2;
 
@@ -557,6 +552,21 @@ classdef    functii
               end
              
              x = cell2mat(x);
+        end
+
+        function [x, X_inter, x_inter] = inv_haar2d(huri, r, huri_col, r_col) 
+        %    h = [1 1] / 2;
+        %    g = [1 -1] / 2;
+        
+            for i = 1 : size(huri, 2)
+                [x{i}, X_inter{i}, x_inter{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
+            end
+
+            if size(huri, 2) ~= 1
+                x = cat(3, x{1}, x{2}, x{3});
+            else
+                x = x{1};
+            end
         end 
       
         function y = proc_wht1d(x, walshMatrix)
