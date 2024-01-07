@@ -449,16 +449,10 @@ classdef    functii
                 r = conv(x, h);
                 r = r(2:2:end);
                 x = r;
-
-                if(size(huri{i}, 1) < size(r, 1))
-                    huri{i} = [huri{i}; 0];
-                elseif(size(huri{i}, 1) > size(r, 1))
-                    r = [r; 0];
-                end
             end
-
-            huriT = cell2mat(huri');
-            huriT = flip(huriT);
+            
+            huriT = flip(huri');
+            huriT = cell2mat(huriT);  
             y = [r; huriT];
            
         end
@@ -511,8 +505,7 @@ classdef    functii
         function [imagine, coef, huri, r, huri_col, r_col] = haar2d(image)
             imagine = imread(image);
             imagine = double(imagine);
-            imagine = imagine(1:end-1, 1:end-1);
-            [xdim, ydim, ch] = size(imagine);
+            [~, ydim, ~] = size(imagine);
 
             for col = 1 : ydim
                 colCurenta = imagine(:, col);
@@ -533,7 +526,7 @@ classdef    functii
             h = [1 1] / 2;
             g = [1 -1] / 2;
 
-            L = size(huri_col{1},2);
+            L = size(huri{1},2);
             
             for i = 1 :size(r, 2)
                 rCurent = r{i};
@@ -544,25 +537,26 @@ classdef    functii
                     r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri{i}{j}), g);
                     rCurent = r_prev;
                 end
-                x_inter{i} = rCurent(1:end-1);
+                x_inter{i} = rCurent;
             end
             
-            X_inter = cell2mat(x_inter);
-
-            % for i = 1 : size(X_inter, 2)
-            %     rCurent = x_inter{i};
-            %     for j = L : -1 : 1 
-            %         if(size(huri_col{i}{j}, 1) < size(rCurent, 1))
-            %             rCurent = rCurent(1:end-1);
-            %         end
-            % 
-            %         r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri_col{i}{j}), g);
-            %         rCurent = r_prev;
-            %     end
-            %     x{i} = rCurent;
-            % end
-
-            x = 1;
+            X_inter = cell2mat(x_inter)';
+            
+            L = size(huri_col{1}, 2);
+             
+              for i = 1 : size(X_inter, 2)
+                  rCurent = X_inter(1:2, i);
+                  for j = L : -1 : 1 
+                      if(size(huri_col{i}{j}, 1) < size(rCurent, 1))
+                          rCurent = rCurent(1:end-1);
+                      end
+                      r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri_col{i}{j}), g);
+                      rCurent = r_prev;
+                  end
+                  x{i} = rCurent;
+              end
+             
+             x = cell2mat(x);
         end 
       
         function y = proc_wht1d(x, walshMatrix)
