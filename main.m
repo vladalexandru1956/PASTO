@@ -12,7 +12,7 @@ filePath = 'D:\pasto_prj\PASTO\Image_1\Lena_standard_bw.bmp'
 %[orig, y, Fs] = fft1d(filePath);
 %z = inv_fft1d(y, Fs);
 %plot_eroare_1d(orig, z, Fs);
-%[fftizat_jum, energie, proc_coef] = proc_energie(y, Fs);
+%[energie, proc_coef] = proc_energie_1d(y, Fs, 'Fourier');
 
 
 %% FFT 2D
