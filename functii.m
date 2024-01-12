@@ -645,7 +645,7 @@ classdef    functii
             x = cell2mat(x);
         end
         
-        function [x] = inv_haar2d(huri, r, huri_col, r_col)
+         function [x] = inv_haar2d(huri, r, huri_col, r_col)
             for i = 1 : size(huri, 2)
                 [x{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
             end
@@ -655,8 +655,6 @@ classdef    functii
             else
                 x = x{1};
             end
-            
-            x = cell2mat(x);
         end
         
         
