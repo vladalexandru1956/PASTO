@@ -60,16 +60,23 @@ filePath = 'D:\pasto_prj\PASTO\Image_1\Lena_standard_bw.bmp'
 
 
 %% Wht 2D
-[y, orig, walshMatrix, xdim, ydim] = wht2d(filePath);
-z = inv_wht2d(y, walshMatrix, xdim, ydim);
+[y, orig, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig] = wht2d(filePath);
+z = inv_wht2d(y, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig);
 % z = z';
 %plot orig image
-figure
-imagesc(abs(orig))
-colormap('gray')
+% figure
+% imagesc(abs(orig))
+% colormap('gray')
 % plot reconstructed image
-figure
-imagesc(abs(z))
-colormap('gray')
-plot_eroare_2d(orig, z)
+% figure
+% imagesc(abs(z))
+% colormap('gray')
+% plot_eroare_2d(orig, z)
+[energie, coefV, procente_coef, indici] = proc_energie_2d(y);
+
+% [orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
+% z = inv_haar2d(huri, r, huri_col, r_col);
+
+
+
 
