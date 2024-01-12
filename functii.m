@@ -203,59 +203,70 @@ classdef    functii
         
         
         function plot_eroare_2d(orig, rec)
-            ox = (0:size(orig, 1)-1);
-            oy = (0:size(orig, 2)-1);
-            if(size(orig, 3) ~= 3)
-                er = imabsdiff(orig, rec);
-                
-                figure
-                [X, Y] = meshgrid(ox, oy);
-                colormap jet
-                h = surf(X, Y, er, 'FaceColor','interp');
-                set(h,'LineStyle','none')
-                xlabel('Index Linie')
-                ylabel('Index Coloana')
-                set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er, 'all'))], 'Rotation',+15);
+            % Define the axes based on the original image dimensions
+            oy = 0:size(orig, 1)-1; % y-axis corresponds to the number of rows
+            ox = 0:size(orig, 2)-1; % x-axis corresponds to the number of columns
+            [X, Y] = meshgrid(ox, oy); % Create a grid that matches the image dimensions
+            
+            % Calculate the absolute difference error
+            er = imabsdiff(orig, rec);
+            
+            
+            % Check if the image is grayscale or color
+            if size(orig, 3) == 1
+                % It's a grayscale image
+                figure;
+                colormap jet;
+                h = surf(X, Y, double(er), 'FaceColor', 'interp'); % Make sure 'er' is double
+                set(h, 'LineStyle', 'none');
+                xlabel('Index Coloana');
+                ylabel('Index Linie');
+                zlabel('Eroare');
+                set(gca, 'Xdir', 'reverse', 'Ydir', 'reverse');
+                title('Eroarea 2D pentru imaginea monocroma');
                 colorbar;
+                % Adjust the position of the text
+                textPositionX = max(get(gca, 'XLim')) * 0.8;
+                textPositionY = max(get(gca, 'YLim')) * 0.1;
+                normaErorii = sum(er(:));
+                text(textPositionX, textPositionY, max(er(:)), ['Norma erorii: ' num2str(normaErorii)]);
             else
+                % It's a color image, plot errors for each channel
                 er1 = imabsdiff(orig(:, :, 1), rec(:, :, 1));
                 er2 = imabsdiff(orig(:, :, 2), rec(:, :, 2));
                 er3 = imabsdiff(orig(:, :, 3), rec(:, :, 3));
                 
-                figure
+                figure;
+                colormap jet;
                 
-                subplot(3, 1, 1)
-                [X, Y] = meshgrid(ox, oy);
-                colormap jet
-                h = surf(X, Y, er1, 'FaceColor','interp');
-                set(h,'LineStyle','none')
-                xlabel('Index Linie')
-                ylabel('Index Coloana')
-                set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er1, 'all'))], 'Rotation',+15);
+                % Plot error for the Red channel
+                subplot(3, 1, 1);
+                h = surf(X, Y, double(er1), 'FaceColor', 'interp');
+                set(h, 'LineStyle', 'none');
+                xlabel('Index Coloana');
+                ylabel('Index Linie');
+                zlabel('Eroare Rosu');
+                title('Eroarea 2D pentru canalul Rosu');
                 colorbar;
                 
-                subplot(3, 1, 2)
-                [X, Y] = meshgrid(ox, oy);
-                colormap jet
-                h = surf(X, Y, er2, 'FaceColor','interp');
-                set(h,'LineStyle','none')
-                xlabel('Index Linie')
-                ylabel('Index Coloana')
-                set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er2, 'all'))], 'Rotation',+15);
+                % Plot error for the Green channel
+                subplot(3, 1, 2);
+                h = surf(X, Y, double(er2), 'FaceColor', 'interp');
+                set(h, 'LineStyle', 'none');
+                xlabel('Index Coloana');
+                ylabel('Index Linie');
+                zlabel('Eroare Verde');
+                title('Eroarea 2D pentru canalul Verde');
                 colorbar;
                 
-                subplot(3, 1, 3)
-                [X, Y] = meshgrid(ox, oy);
-                colormap jet
-                h = surf(X, Y, er3, 'FaceColor','interp');
-                set(h,'LineStyle','none')
-                xlabel('Index Linie')
-                ylabel('Index Coloana')
-                set(gca,'Xdir','reverse','Ydir','reverse')
-                text(119,0, 0.5, ['Norma erorii: ' num2str(sum(er3, 'all'))], 'Rotation',+15);
+                % Plot error for the Blue channel
+                subplot(3, 1, 3);
+                h = surf(X, Y, double(er3), 'FaceColor', 'interp');
+                set(h, 'LineStyle', 'none');
+                xlabel('Index Coloana');
+                ylabel('Index Linie');
+                zlabel('Eroare Albastru');
+                title('Eroarea 2D pentru canalul Albastru');
                 colorbar;
             end
         end
@@ -482,10 +493,11 @@ classdef    functii
                     [y{i}, huri{i}, r{i}] = functii.proc_haar1d(bucati{i});
                 end
                 if(~isempty(rest))
-                    [y{i}, huri{i+1}, r{i+1}] = functii.proc_haar1d(rest);
+                    [y{i+1}, huri{i+1}, r{i+1}] = functii.proc_haar1d(rest);
                 end
             end
             
+            figure
             functii.plot_1d_segmente(y, "Haar")
         end
         
@@ -516,40 +528,86 @@ classdef    functii
             x_intarziat = cat(1, x_intarziat{:});
         end
         
-        function [imagine, coef, huri, r, huri_col, r_col] = haar2d(image)
-            imagine = imread(image);
-            imagine = double(imagine);
-            [xdim, ydim, ch] = size(imagine);
-            
+        function [coef, huri, r, coef_col, huri_col, r_col] = proc_haar2d(imagine)
+            [~, ydim, ~] = size(imagine);
             for col = 1 : ydim
                 colCurenta = imagine(:, col);
                 [coef_col{col}, huri_col{col}, r_col{col}] = functii.proc_haar1d(colCurenta);
             end
+            coef_col_temp = cell2mat(coef_col);
             
-            functii.plot_1d_segmente(coef_col, "Haar2D")
-            coef_col = cell2mat(coef_col);
-            
-            for row = 1 : size(coef_col, 1)
-                rowCurent = coef_col(row, :)';
+            for row = 1 : size(coef_col_temp, 1)
+                rowCurent = coef_col_temp(row, :)';
                 [coef{row}, huri{row}, r{row}] = functii.proc_haar1d(rowCurent);
             end
-            functii.plot_1d_segmente(coef, "Haar2D")
         end
         
-        function x = inv_haar2d(huri, r, huri_col, r_col)
+        function [imagine, coef, huri, r, huri_col, r_col] = haar2d(image)
+            imagine = imread(image);
+            imagine = double(imagine);
+            [~, ~, ch] = size(imagine);
+            
+            for i = 1 : ch
+                [coef{i}, huri{i}, r{i}, coef_col{i}, huri_col{i}, r_col{i}] = functii.proc_haar2d(imagine(:, :, i));
+            end
+            
+            figure
+            for i = 1 : ch
+                subplot(2, ch, i)
+                functii.plot_1d_segmente(coef_col{i}, "Haar2D")
+                subplot(2, ch, i+ch)
+                functii.plot_1d_segmente(coef{i}, "Haar2D")
+                coef{i} = cell2mat(coef{i});
+            end
+            
+        end
+        
+        function [x] = proc_inv_haar2d(huri, r, huri_col, r_col)
             h = [1 1] / 2;
             g = [1 -1] / 2;
             
-            L = size(huri_col{1},2);
+            L = size(huri{1},2);
             
-            for i = 1 :size(r_col, 2)
-                rCurent = r_col{i};
-                size(conv(functii.interpolare(rCurent), h))
+            for i = 1 :size(r, 2)
+                rCurent = r{i};
                 for j = L : -1 : 1
+                    if(size(huri{i}{j}, 1) < size(rCurent, 1))
+                        rCurent = rCurent(1:end-1);
+                    end
+                    r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri{i}{j}), g);
+                    rCurent = r_prev;
+                end
+                x_inter{i} = rCurent;
+            end
+            
+            X_inter = cell2mat(x_inter)';
+            
+            L = size(huri_col{1}, 2);
+            
+            for i = 1 : size(X_inter, 2)
+                rCurent = X_inter(1:2, i);
+                for j = L : -1 : 1
+                    if(size(huri_col{i}{j}, 1) < size(rCurent, 1))
+                        rCurent = rCurent(1:end-1);
+                    end
                     r_prev = conv(functii.interpolare(rCurent), h) + conv(functii.interpolare(huri_col{i}{j}), g);
                     rCurent = r_prev;
                 end
                 x{i} = rCurent;
+            end
+            
+            x = cell2mat(x);
+        end
+        
+        function [x] = inv_haar2d(huri, r, huri_col, r_col)
+            for i = 1 : size(huri, 2)
+                [x{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
+            end
+            
+            if size(huri, 2) ~= 1
+                x = cat(3, x{1}, x{2}, x{3});
+            else
+                x = x{1};
             end
         end
         
@@ -585,6 +643,9 @@ classdef    functii
         end
         
         function H = hadamardMatrix(order)
+            if order == 0
+                error('Ordinul matricei Hadamard nu poate fi 0');
+            end
             if order == 1
                 H = 1;
             else
@@ -605,64 +666,134 @@ classdef    functii
             y = cat(1, y_inv{:});
         end
         
-        function [y, orig, walshMatrix, xdim, ydim] = wht2d(image)
+        function [y, orig, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim, ydim] = wht2d(image)
             orig = imread(image);
-            imagine = double(orig);
-            [xdim, ydim, ch] = size(imagine);
-            
+            %make the image only one channel
+            [xdim, ydim, ch] = size(orig);
             % If image is RGB, skip for now
-            if ch == 3
-                error('Imaginea trebuie sa fie alb-negru');
-            end
+          
+            imagine = double(orig);
             
-            % Check if column dimension is a power of 2 and if not, pad with zeros
+            % Check if column and row dimensions are powers of 2, if not, pad with zeros to the next power of 2
+            if log2(xdim) ~= floor(log2(xdim))
+                imagine = [imagine; zeros(2^(ceil(log2(xdim))) - xdim, ydim)];
+            end
+            xdim_padded = size(imagine, 1);
+            
             if log2(ydim) ~= floor(log2(ydim))
-                imagine = [imagine, zeros(xdim, 2^(ceil(log2(ydim))) - ydim, 3)];
+                imagine = [imagine, zeros(xdim_padded, 2^(ceil(log2(ydim))) - ydim)];
             end
+            ydim_padded = size(imagine, 2);
             
-            lungSegment = ydim;
-            order = log2(lungSegment);
-            permMatrix = hada2walsh_matrix(order);
-            H = functii.hadamardMatrix(lungSegment);
-            walshMatrix = permMatrix * H;
+            lungSegment_col = xdim_padded;
+            order_col = log2(lungSegment_col);
+            permMatrix_col = hada2walsh_matrix(order_col);
+            H = functii.hadamardMatrix(lungSegment_col);
+            walshMatrix_col = permMatrix_col * H;
             
             % Apply 1D WHT on each column
-            for col = 1 : ydim
+            for col = 1 : ydim_padded
                 colCurenta = imagine(:, col);
-                y_col{col} = walshMatrix * colCurenta;
+                y_col{col} = walshMatrix_col * colCurenta;
             end
             
             % Apply 1D WHT on each row of the 1D WHT result
             y_col = cell2mat(y_col);
             
+            lungSegment_row = ydim_padded;
+            order_row = log2(lungSegment_row);
+            permMatrix_row = hada2walsh_matrix(order_row);
+            H = functii.hadamardMatrix(lungSegment_row);
+            walshMatrix_row = permMatrix_row * H;
+            
             for row = 1 : size(y_col, 1)
                 rowCurent = y_col(row, :)';
-                y{row} = walshMatrix * rowCurent;
+                y{row} = walshMatrix_row * rowCurent;
             end
             
         end
         
+        function [energie,coefV, procente_coef] = proc_energie_2d(coef)
+            coefV = [];
+            
+            if size(coef, 2) == 1
+                coefV{1} = reshape(coef{1},[],1);
+            else
+                for i = 1 : size(coef, 2)
+                    coefV{i} = reshape(coef{i}, [], 1);
+                end
+            end
+            
+            for i = 1 : size(coefV, 2)
+                energie{i} = abs(coefV{i}).^2;
+                energie{i} = sort(energie{i}, 'descend');
+                energie_totala{i} = sum(energie{i});
+            end
+            
+            procente = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+            indici = {};
+            
+            for i = 1 : size(energie, 2)
+                indiceEnergie = 0;
+                suma = 0;
+                for j = 1 : length(procente)
+                    while (suma <= procente(j) * energie_totala{i}) & indiceEnergie < length(energie{i})
+                        indiceEnergie = indiceEnergie + 1;
+                        suma = suma + energie{i}(indiceEnergie);
+                    end
+                    indici{i}(j) = indiceEnergie-1;
+                end
+            end
+            
+            procente_coef = {};
+            
+            for i = 1 : size(energie, 2)
+                figure
+                plot(coefV{i})
+                for j = 1 : length(indici)
+                    procente_coef{i}(j) = indici{i}(j)/length(coefV{i});
+                    xline(indici{i}(j), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef{i}(j))], 'LineWidth', 1);
+                end
+            end
+        end
+        % function y = inv_wht2d(x, walshMatrix_col, walshMatrix_row, xdim, ydim, xdim_orig, ydim_orig)
+        %     N1 = size(walshMatrix_row, 1);
+        %     inverseMatrix_row = (1/N1) * walshMatrix_row';
+        %     x = cell2mat(x)';
+        %     for i = 1:size(x, 2)
+        %         y_segment_inv = inverseMatrix_row * x(:, i);
+        %         y_cols{i} = y_segment_inv;
+        %     end
         
-        function y = inv_wht2d(x, walshMatrix, xdim, ydim)
-            N = size(walshMatrix, 1);
-            inverseMatrix = (1/N) * walshMatrix';
-            x = cell2mat(x);
-            
-            for i = 1:size(x, 2)
-                y_segment_inv = inverseMatrix * x(:, i);
-                y_cols{i} = y_segment_inv;
+        %     y_temp = cell2mat(y_cols);
+        %     y_temp = y_temp';
+        %     N2 = size(walshMatrix_col, 1);
+        %     inverseMatrix_col = (1/N2) * walshMatrix_col';
+        %     for i = 1:size(y_temp, 1)
+        %         y_segment_inv = inverseMatrix_col * y_temp(:, i);
+        %         y_inv{i} = y_segment_inv;
+        %     end
+        
+        %     y = cell2mat(y_inv);
+        %     y = uint8(y);
+        %     % y = y(1:xdim_orig, 1:ydim_orig);
+        
+        % end
+        function y = inv_wht2d(x, walshMatrix_col, walshMatrix_row, xdim, ydim, xdim_orig, ydim_orig)
+            x_mat = cell2mat(x);
+            x_mat = x_mat';
+            inverseMatrix_col = (1 / size(walshMatrix_col, 1)) * walshMatrix_col';
+            for i = 1:size(x_mat, 2)
+                x_mat(:, i) = inverseMatrix_col * x_mat(:, i);
             end
             
-            y_temp = cell2mat(y_cols);
-            y_temp = y_temp';
-            
-            for i = 1:size(y_temp, 1)
-                y_segment_inv = inverseMatrix * y_temp(:, i);
-                y_inv{i} = y_segment_inv;
+            x_mat = x_mat';
+            inverseMatrix_row = (1 / size(walshMatrix_row, 1)) * walshMatrix_row';
+            for i = 1:size(x_mat, 2)  % Operating on columns
+                x_mat(:, i) = inverseMatrix_row * x_mat(:, i);
             end
-            
-            y = cell2mat(y_inv);
-            y = uint8(y);
+            y = uint8(x_mat)';
+            y = y(1:xdim_orig, 1:ydim_orig);
         end
         
     end
