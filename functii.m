@@ -66,7 +66,11 @@ classdef    functii
             set(gca,'Xdir','reverse','Ydir','reverse')    
         end
 
-        function [f, P1] = plot_1d(audio_fft, Fs, oy)
+        function [ox] = plot_coeficienti(coef, oy)
+            
+        end
+    
+        function [f, P1] = plot_1d_fft(audio_fft, Fs, oy)
             if strcmp(oy, 'abs')
                 P2 = abs(audio_fft);
                 P1 = P2(1:length(audio_fft)/2+1);
@@ -93,14 +97,12 @@ classdef    functii
         end
 
         function plot_1d_segmente(bucatiTransf, Transf)
+            %ELIMINARE PARTE DE REST (ULTIM SEGMENT)
+            bucatiTransf = bucatiTransf(1 : end-1);
+
             ox = (0:size(bucatiTransf, 2)-1);
             oy = (0:size(bucatiTransf{1},1)-1);
             
-            if(strcmp(Transf, 'Haar2D') ~= 1)
-                ox = (0:size(bucatiTransf, 2)-2);
-                bucatiTransf = bucatiTransf(1 : end-1);
-            end
-
             bucatiTransf = cell2mat(bucatiTransf);
        %     bucatiTransf = abs(bucatiTransf);
             
@@ -228,12 +230,16 @@ classdef    functii
             end
         end
 
-        function [fftizat_jum, energie, procente_coef] = proc_energie_fft(fftizat, Fs)
-            fftizat_jum = fftizat;
-            fftizat_jum = fftizat_jum(1:length(fftizat)/2+1);
-            fftizat_jum(2:end-1) = 2*fftizat_jum(2:end-1);
+        function [energie, procente_coef] = proc_energie_1d(coef, Fs, Transf)
+            if strcmp(Transf, 'Fourier')
+                coef = coef(1:length(coef)/2+1);
+                coef(2:end-1) = 2*coef(2:end-1);
+            else
+                coef = cat(1, coef{:});
+            end
 
-            energie = abs(fftizat_jum).^2;
+            energie = abs(coef).^2;
+            energie = sort(energie, 'descend');
             energie_totala = sum(energie);
 
             procente = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
@@ -242,21 +248,72 @@ classdef    functii
             suma = 0;
             j = 0;
             
-            [f, ~] = functii.plot_1d(fftizat, Fs, 'power');
+            if strcmp(Transf, 'Fourier')
+                [f, ~] = functii.plot_1d_fft(coef, Fs, 'power');
+            else
+                figure
+                plot(coef);
+            end
 
             for i = 1 : length(procente)
-                while (suma <= procente(i) * energie_totala) & j < length(fftizat_jum)
+                while (suma <= procente(i) * energie_totala) & j < length(energie)
                     j = j + 1;
                     suma = suma + energie(j);
                 end
                 indici(i) = j-1;
             end
 
-            procente_coef = zeros(length(indici), 1);
-            
             for i = 1 : length(indici)
-                procente_coef(i) = indici(i)/length(fftizat_jum);
-                xline(f(indici(i)), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef(i))], 'LineWidth', 1);
+                procente_coef(i) = indici(i)/length(energie);
+                if strcmp(Transf, 'Fourier')
+                    xline(f(indici(i)), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef(i))], 'LineWidth', 1);
+                else
+                    xline(indici(i), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef(i))], 'LineWidth', 1);
+                end
+            end
+        end
+
+       function [energie, procente_coef] = proc_energie_2d(coef)
+            coefV = [];
+
+            if size(coef, 2) == 1
+                coefV{1} = reshape(coef{1},[],1);
+            else
+                for i = 1 : size(coef, 2)
+                    coefV{i} = reshape(coef{i}, [], 1);
+                end
+            end
+            
+            for i = 1 : size(coefV, 2)
+                energie{i} = abs(coefV{i}).^2;
+                energie{i} = sort(energie{i}, 'descend');
+                energie_totala{i} = sum(energie{i});
+            end
+
+            procente = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 0.99];
+            indici = {};
+
+            for i = 1 : size(energie, 2)
+                indiceEnergie = 0;
+                suma = 0;
+                for j = 1 : length(procente)
+                    while (suma <= procente(j) * energie_totala{i}) & indiceEnergie < length(energie{i})
+                        indiceEnergie = indiceEnergie + 1;
+                        suma = suma + energie{i}(indiceEnergie);
+                    end
+                    indici{i}(j) = indiceEnergie-1;
+                end
+            end
+
+            procente_coef = {};
+
+            for i = 1 : size(energie, 2)
+                figure
+                plot(coefV{i})
+                for j = 1 : length(indici)
+                    procente_coef{i}(j) = indici{i}(j)/length(coefV{i});
+                    xline(indici{i}(j), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef{i}(j))], 'LineWidth', 1);
+                end
             end
         end
 
@@ -450,7 +507,7 @@ classdef    functii
                     [y{i}, huri{i}, r{i}] = functii.proc_haar1d(bucati{i}); 
                 end
                 if(~isempty(rest))
-                    [y{i}, huri{i+1}, r{i+1}] = functii.proc_haar1d(rest);
+                    [y{i+1}, huri{i+1}, r{i+1}] = functii.proc_haar1d(rest);
                 end
             end
             
@@ -514,10 +571,12 @@ classdef    functii
                 functii.plot_1d_segmente(coef_col{i}, "Haar2D")
                 subplot(2, ch, i+ch)
                 functii.plot_1d_segmente(coef{i}, "Haar2D")
+                coef{i} = cell2mat(coef{i});
             end
+
         end
 
-        function [x, X_inter, x_inter] = proc_inv_haar2d(huri, r, huri_col, r_col)
+        function [x] = proc_inv_haar2d(huri, r, huri_col, r_col)
             h = [1 1] / 2;
             g = [1 -1] / 2;
 
@@ -554,9 +613,9 @@ classdef    functii
              x = cell2mat(x);
         end
 
-        function [x, X_inter, x_inter] = inv_haar2d(huri, r, huri_col, r_col) 
+        function [x] = inv_haar2d(huri, r, huri_col, r_col) 
             for i = 1 : size(huri, 2)
-                [x{i}, X_inter{i}, x_inter{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
+                [x{i}] = functii.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
             end
 
             if size(huri, 2) ~= 1
