@@ -354,25 +354,35 @@ classdef    utils
                 end
             end
 
-            tabel = [procente.*100; procente_coef'];
+            if size(coef, 2) == 1
+                 tabel = [procente.*100; procente_coef{1}];
+            else
+                 tabel = [procente.*100; procente_coef{1}; procente_coef{2}; procente_coef{3}];
+            end
         end
 
         function regresie_energie(tabel, Transf)
+            canale = ['R', 'G', 'B'];
             x = tabel(1, :)';
-            y = tabel(2, :)';
 
-            format long
-            b1 = x\y;
-
-            yCalc1 = b1*x;
-            figure
-            scatter(x,y)
-            hold on
-            plot(x,yCalc1)
-            xlabel('% energie din energia totala')
-            ylabel('% coeficienti')
-            title(['Dreapta de regresie a compresiei metodei ', Transf])
-            grid on
+            for i = 2 : size(tabel, 1)
+                y{i-1} = tabel(i, :)';
+            end
+            
+            for i = 1 : size(y, 2)
+                format long
+                b1 = x\y{i};
+            
+                yCalc1 = b1*x;
+                figure
+                scatter(x,y{i})
+                hold on
+                plot(x,yCalc1)
+                xlabel('% energie din energia totala')
+                ylabel('% coeficienti')
+                title(['Dreapta de regresie a compresiei metodei ', Transf, ' - canal ', canale(i)])
+                grid on
+            end
         end
         
         % function [cumulative_energy, procente_coef] = proc_energie_klt(D)

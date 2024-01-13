@@ -29,14 +29,14 @@ import wht.*
 
 
 %% TKL 1D
-[orig, coef, D, Vm, xM, Fs] = tkl1d(filePath);
-z = inv_tkl1d(coef, Vm, xM);
-[energie, tabel] = proc_energie_1d(coef, 0, 'TKL');
-regresie_energie(tabel, 'TKL1D')
+%[orig, coef, D, Vm, xM, Fs] = tkl1d(filePath);
+%z = inv_tkl1d(coef, Vm, xM);
+%[energie, tabel] = proc_energie_1d(coef, 0, 'TKL');
+%regresie_energie(tabel, 'TKL1D')
 
 %% TKL 2D
-% [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
-% z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
+ [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
+ z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
 % figure
 % imagesc(uint8(z))
 % if(size(z, 3) ~= 3)
@@ -48,8 +48,8 @@ regresie_energie(tabel, 'TKL1D')
 %     colormap('gray')
 % end
 
-%[energie, tabel] = proc_energie_2d(coef, 'TKL');
-% regresie_energie(tabel, 'TKL1D')
+[energie, tabel] = proc_energie_2d(coef, 'TKL');
+regresie_energie(tabel, 'TKL2D')
 
 %% Haar 1D
 %[orig, y, huri, r, Fs] = haar1d(filePath, 10000);
