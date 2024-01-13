@@ -32,15 +32,10 @@ import wht.*
  %[energie, proc_coef] = proc_energie_1d(y, 0, 'TKL');
 
 %% TKL 2D
-%% PROBLEMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-%1. Nu merge rgb.
-%2. Trebuie sa vedem ce facem cu procentele de energie.
-
-
-% [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
-% z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
-% figure
-% imagesc(abs(z))
+ [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
+ z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
+ figure
+ imagesc(uint8(z))
 % if(size(z, 3) ~= 3)
 %     colormap('gray')
 % end
@@ -50,17 +45,17 @@ import wht.*
 %     colormap('gray')
 % end
 
-%[energie, proc_coef, indici] = proc_energie_2d(coef);
+[energie, proc_coef, coefV, indici] = proc_energie_2d(coef, 'TKL');
 
 %% Haar 1D
-[orig, y, huri, r, Fs] = haar1d(filePath, 10000);
-z = inv_haar1d(huri, r);
-norm(orig-z(1:size(orig)))
-[energie, proc_coef] = proc_energie_1d(y, 0, 'Haar');
+%[orig, y, huri, r, Fs] = haar1d(filePath, 10000);
+%z = inv_haar1d(huri, r);
+%norm(orig-z(1:size(orig)))
+%[energie, proc_coef] = proc_energie_1d(y, 0, 'Haar');
 
 %% Haar 2D
 %[orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
-%z = inv_haar2d(huri, r, huri_col, r_col);
+%z = inv_haar2d(huri, r, huri_col);
 %[energie, proc_coef, indici] = proc_energie_2d(coef);
 %figure
 %imagesc(uint8(z))

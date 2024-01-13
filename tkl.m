@@ -41,17 +41,35 @@ classdef    tkl
         function [imagine, y, Vm, xM, xdim, ydim] = tkl2d(image)
             imagine = imread(image);
             imagine = double(imagine);
-            [xdim, ydim, ~] = size(imagine);
-            imgVec = reshape(imagine, 1, []);
-            [bucati, rest] = utils.segmentare_bucati(imgVec', 1000);
+            [xdim, ydim, ch] = size(imagine);
+
+            for i = 1 : ch
+                imgVec{i} = reshape(imagine(:, :, i), 1, []);
+                [bucati{i}, rest{i}] = utils.segmentare_bucati(imgVec{i}', 1000);
+
+                if(~isempty(bucati{i}))
+                    for j = 1 : size(bucati{i}, 2)
+                        [y{i}{j}, D{i}{j}, Vm{i}{j}, xM{i}{j}] = tkl.proc_tkl1d(bucati{i}{j});
+                    end
+                    if(~isempty(rest{i}))
+                        [y{i}{j+1}, D{i}{j+1}, Vm{i}{j+1}, xM{i}{j+1}] = tkl.proc_tkl1d(rest{i});
+                    end
+                end
+
+                if ch == 1
+                    y{1} = y{i};
+                end
+            end
             
-            if(~isempty(bucati))
-                for i = 1 : size(bucati, 2)
-                    [y{i}, D{i}, Vm{i}, xM{i}] = tkl.proc_tkl1d(bucati{i});
-                end
-                if(~isempty(rest))
-                    [y{i+1}, D{i+1}, Vm{i+1}, xM{i+1}] = tkl.proc_tkl1d(rest);
-                end
+     %       utils.plot_1d_segmente(y, 'TKL')
+
+            figure
+            for i = 1 : ch
+                subplot(ch, 1, i)
+                utils.plot_1d_segmente(y{i}, "TKL")
+            %    subplot(ch, 1, i+ch)
+            %    utils.plot_1d_segmente(coef{i}, "TKL")
+            %    coef{i} = cell2mat(coef{i});
             end
         end
         
@@ -59,13 +77,20 @@ classdef    tkl
             for i = 1 :size(x, 2)
                 y{i} = Vm{i} * x{i} + xM{i};
             end
-            
             y = cat(1, y{:});
         end
         
         function y = inv_tkl2d(x, Vm, xM, xdim, ydim)
-            imgVec = tkl.inv_tkl1d(x, Vm, xM);
-            y = reshape(imgVec, xdim, ydim);
+            for i = 1 : size(Vm, 2)
+                imgVec{i} = tkl.inv_tkl1d(x{i}, Vm{i}, xM{i});
+                y{i} = reshape(imgVec{i}, xdim, ydim);
+            end
+
+            if size(Vm, 2) ~= 1
+                y = cat(3, y{1}, y{2}, y{3});
+            else
+                y = y{1};
+            end
         end
     end
 end

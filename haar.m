@@ -106,7 +106,7 @@ classdef    haar
             
         end
         
-        function [x] = proc_inv_haar2d(huri, r, huri_col, r_col)
+        function [x] = proc_inv_haar2d(huri, r, huri_col)
             h = [1 1] / 2;
             g = [1 -1] / 2;
             
@@ -143,9 +143,9 @@ classdef    haar
             x = cell2mat(x);
         end
         
-         function [x] = inv_haar2d(huri, r, huri_col, r_col)
+         function [x] = inv_haar2d(huri, r, huri_col)
             for i = 1 : size(huri, 2)
-                [x{i}] = haar.proc_inv_haar2d(huri{i}, r{i}, huri_col{i}, r_col{i});
+                [x{i}] = haar.proc_inv_haar2d(huri{i}, r{i}, huri_col{i});
             end
             
             if size(huri, 2) ~= 1

@@ -297,14 +297,22 @@ classdef    utils
             end
         end
 
-        function [energie, procente_coef, indici] = proc_energie_2d(coef)
-            % coefV = [];
-            
-            if size(coef, 2) == 1
-                coefV{1} = reshape(coef{1},[],1);
-            else
-                for i = 1 : size(coef, 2)
-                    coefV{i} = reshape(coef{i}, [], 1);
+        function [energie, procente_coef, coefV, indici] = proc_energie_2d(coef, Transf)
+            if strcmp(Transf, 'TKL')
+                if size(coef, 2) == 1
+                    coefV{1} = cat(1, coef{1}{:})
+                else
+                    for i = 1 : size(coef, 2)
+                        coefV{i} = cat(1, coef{i}{:});
+                    end
+                end
+            else 
+                if size(coef, 2) == 1
+                    coefV{1} = reshape(coef{1},[],1);
+                else
+                    for i = 1 : size(coef, 2)
+                        coefV{i} = reshape(coef{i}, [], 1);
+                    end
                 end
             end
             
