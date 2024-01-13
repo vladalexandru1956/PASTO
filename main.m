@@ -16,26 +16,29 @@ import wht.*
 %[orig, y, Fs] = fft1d(filePath);
 %z = inv_fft1d(y, Fs);
 %plot_eroare_1d(orig, z, Fs);
-%[energie, proc_coef] = proc_energie_1d(y, Fs, 'Fourier');
+%[energie, tabel] = proc_energie_1d(y, Fs, 'Fourier');
+%regresie_energie(tabel, 'FFT1D
 
 
 %% FFT 2D
  %[orig, fftizata, coef] = fft2d(filePath);
  %z = inv_fft2d(fftizata);
  %plot_eroare_2d(orig, z)
- %[energie, proc_coef, indici] = proc_energie_2d(coef);
+ %[energie, tabel] = proc_energie_2d(coef);
+ %regresie_energie(tabel, 'FFT2D');
 
 
 %% TKL 1D
- %[orig, coef, D, Vm, xM, Fs] = tkl1d(filePath);
- %z = inv_tkl1d(y, Vm, xM);
- %[energie, proc_coef] = proc_energie_1d(y, 0, 'TKL');
+[orig, coef, D, Vm, xM, Fs] = tkl1d(filePath);
+z = inv_tkl1d(coef, Vm, xM);
+[energie, tabel] = proc_energie_1d(coef, 0, 'TKL');
+regresie_energie(tabel, 'TKL1D')
 
 %% TKL 2D
- [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
- z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
- figure
- imagesc(uint8(z))
+% [orig, coef, Vm, xM, xdim, ydim] = tkl2d(filePath);
+% z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
+% figure
+% imagesc(uint8(z))
 % if(size(z, 3) ~= 3)
 %     colormap('gray')
 % end
@@ -45,21 +48,23 @@ import wht.*
 %     colormap('gray')
 % end
 
-[energie, proc_coef, coefV, indici] = proc_energie_2d(coef, 'TKL');
+%[energie, tabel] = proc_energie_2d(coef, 'TKL');
+% regresie_energie(tabel, 'TKL1D')
 
 %% Haar 1D
 %[orig, y, huri, r, Fs] = haar1d(filePath, 10000);
 %z = inv_haar1d(huri, r);
 %norm(orig-z(1:size(orig)))
-%[energie, proc_coef] = proc_energie_1d(y, 0, 'Haar');
+%[energie, tabel] = proc_energie_1d(y, 0, 'Haar');
+%regresie_energie(tabel, 'Haar1D')
 
 %% Haar 2D
 %[orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
 %z = inv_haar2d(huri, r, huri_col);
-%[energie, proc_coef, indici] = proc_energie_2d(coef);
+%[energie, tabel] = proc_energie_2d(coef);
 %figure
 %imagesc(uint8(z))
-
+%regresie_energie(tabel, 'Haar2D')
 
 %% Wht 1D
 % [audio, y, Fs, walshMatrix]  = wht1d(filePath, 1024);

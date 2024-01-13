@@ -252,7 +252,7 @@ classdef    utils
             end
         end
         
-        function [energie, procente_coef] = proc_energie_1d(coef, Fs, Transf)
+        function [energie, tabel] = proc_energie_1d(coef, Fs, Transf)
             if strcmp(Transf, 'Fourier')
                 coef = coef(1:length(coef)/2+1);
                 coef(2:end-1) = 2*coef(2:end-1);
@@ -288,19 +288,21 @@ classdef    utils
             procente_coef = zeros(length(indici), 1);
             
             for i = 1 : length(indici)
-                procente_coef(i) = indici(i)/length(energie);
+                procente_coef(i) = indici(i)/length(energie) * 100;
                 if strcmp(Transf, 'Fourier')
                     xline(f(indici(i)), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef(i))], 'LineWidth', 1);
                 else
                     xline(indici(i), 'r--', [num2str(procente(i)*100) '% - Procent coef.: ' num2str(procente_coef(i))], 'LineWidth', 1);
                 end
             end
+
+            tabel = [procente.*100; procente_coef'];
         end
 
-        function [energie, procente_coef, coefV, indici] = proc_energie_2d(coef, Transf)
+        function [energie, tabel] = proc_energie_2d(coef, Transf)
             if strcmp(Transf, 'TKL')
                 if size(coef, 2) == 1
-                    coefV{1} = cat(1, coef{1}{:})
+                    coefV{1} = cat(1, coef{1}{:});
                 else
                     for i = 1 : size(coef, 2)
                         coefV{i} = cat(1, coef{i}{:});
@@ -347,10 +349,30 @@ classdef    utils
                 figure
                 plot(energie{i})
                 for j = 1 : length(indici{i})
-                    procente_coef{i}(j) = indici{i}(j)/length(coefV{i});
+                    procente_coef{i}(j) = indici{i}(j)/length(coefV{i}) * 100;
                     xline(indici{i}(j), 'r--', [num2str(procente(j)*100) '% - Procent coef.: ' num2str(procente_coef{i}(j))], 'LineWidth', 1);
                 end
             end
+
+            tabel = [procente.*100; procente_coef'];
+        end
+
+        function regresie_energie(tabel, Transf)
+            x = tabel(1, :)';
+            y = tabel(2, :)';
+
+            format long
+            b1 = x\y;
+
+            yCalc1 = b1*x;
+            figure
+            scatter(x,y)
+            hold on
+            plot(x,yCalc1)
+            xlabel('% energie din energia totala')
+            ylabel('% coeficienti')
+            title(['Dreapta de regresie a compresiei metodei ', Transf])
+            grid on
         end
         
         % function [cumulative_energy, procente_coef] = proc_energie_klt(D)
