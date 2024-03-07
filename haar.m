@@ -95,6 +95,7 @@ classdef    haar
                 [coef{i}, huri{i}, r{i}, coef_col{i}, huri_col{i}, r_col{i}] = haar.proc_haar2d(imagine(:, :, i));
             end
             
+            
             figure
             for i = 1 : ch
                 subplot(2, ch, i)
@@ -103,7 +104,6 @@ classdef    haar
                 utils.plot_1d_segmente(coef{i}, "Haar2D")
                 coef{i} = cell2mat(coef{i});
             end
-            
         end
         
         function [x] = proc_inv_haar2d(huri, r, huri_col)

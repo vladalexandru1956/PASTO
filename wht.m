@@ -29,6 +29,9 @@ classdef    wht
                     y{i+1} = wht.proc_wht1d(rest, walshMatrix);
                 end
             end
+
+            figure
+            utils.plot_1d_segmente(y, "WHT1D")
         end
         
         function H = hadamardMatrix(order)
@@ -97,9 +100,9 @@ classdef    wht
                 % Apply 1D WHT on each column
                 for col = 1 : ydim_padded
                     colCurenta = imagine(:, col);
-                    y_col{col} = walshMatrix_col * colCurenta;
+                    y_col{1}{col} = walshMatrix_col * colCurenta;
                 end
-                y_col_mat = cell2mat(y_col);
+                y_col_mat = cell2mat(y_col{1});
             elseif ch == 3
                 for c = 1 : ch
                     for col = 1 : ydim_padded
@@ -136,14 +139,15 @@ classdef    wht
                     end
                 end
             end
+            size(y{1})
             
             figure
             for i = 1 : ch
                  subplot(2, ch, i)
-                 utils.plot_1d_segmente(y_col{i}, "Haar2D")
+                 utils.plot_1d_segmente(y_col{i}, "WHT2D")
                  subplot(2, ch, i+ch)
-                 utils.plot_1d_segmente(y{i}, "Haar2D")
-                y{i} = cell2mat(y{i});
+                 utils.plot_1d_segmente(y{i}, "WHT2D")
+                 y{i} = cell2mat(y{i});
             end
         end
         
@@ -153,7 +157,6 @@ classdef    wht
             elseif size(x, 2) == 1
                 x_mat = x{1};
             end
-            size(x_mat)
             
             inverseMatrix_col = (1 / size(walshMatrix_col, 1)) * walshMatrix_col';
             inverseMatrix_row = (1 / size(walshMatrix_row, 1)) * walshMatrix_row';

@@ -32,6 +32,15 @@ classdef    tkl
             else
                 [y, D, Vm, xM] = tkl.proc_tkl1d(audio);
             end
+
+            T = 1 / Fs;
+            
+            figure
+            t = (0:length(audio)-1)*T;
+            plot(t,audio)
+            title("Semnalul audio original")
+            xlabel("t (seconds)")
+            ylabel("y(t)")
             
             figure
             utils.plot_1d_segmente(y, "TKL")

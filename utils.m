@@ -361,26 +361,36 @@ classdef    utils
             end
         end
 
-        function regresie_energie(tabel, Transf)
+        function panta = regresie_energie(tabel, Transf, color)
             canale = ['R', 'G', 'B'];
             x = tabel(1, :)';
 
             for i = 2 : size(tabel, 1)
                 y{i-1} = tabel(i, :)';
             end
-            
+
+            figure
             for i = 1 : size(y, 2)
                 format long
-                b1 = x\y{i};
-            
-                yCalc1 = b1*x;
-                figure
-                scatter(x,y{i})
+                X = [ones(length(x),1) x];
+                size(X)
+                b = X\y{i};
+                size(b)
+                panta = b(2);
+                yCalc1 = X*b;
+                if size(y, 2) == 3
+                    subplot(3, 1, i)
+                end
+                scatter(x,y{i}, [], color)
                 hold on
-                plot(x,yCalc1)
+                plot(x,yCalc1, color)
                 xlabel('% energie din energia totala')
                 ylabel('% coeficienti')
-                title(['Dreapta de regresie a compresiei metodei ', Transf, ' - canal ', canale(i)])
+                if size(y, 2) == 3
+                    title(['Dreapta de regresie a compresiei metodei ', Transf, ' - canal ', canale(i)])
+                else
+                    title(['Dreapta de regresie a compresiei metodei ', Transf])
+                end
                 grid on
             end
         end
