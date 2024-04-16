@@ -10,20 +10,27 @@ import wht.*
  [file, path] = uigetfile;
  filePath = fullfile(path, file);
 
-%filePath = 'D:\pasto_prj\PASTO\Image_1\Lena_standard_bw.bmp'
 %% FFT 1D
 
-%[orig, y, Fs] = fft1d(filePath);
-%z = inv_fft1d(y, Fs);
-%plot_eroare_1d(orig, z, Fs);
-%[~, tabel_fft1d] = proc_energie_1d(y, Fs, 'FFT1D');
-%panta_fft1d = regresie_energie(tabel_fft1d, 'FFT1D', 'r');
+% [orig, y, Fs] = fft1d(filePath);
+% z = inv_fft1d(y, Fs);
+% plot_eroare_1d(orig, z, Fs);
+% [~, tabel_fft1d] = proc_energie_1d(y, Fs, 'Fourier');
+% panta_fft1d = regresie_energie(tabel_fft1d, 'Fourier', 'r');
 
 
 %% FFT 2D
 %[orig, fftizata, coef_fft2d] = fft2d(filePath);
 %z = inv_fft2d(fftizata);
-%plot_eroare_2d(orig, z)
+%plot_eroare_2d(double(orig), double(z));
+
+%figure
+%imagesc(abs(uint8(z)))
+%if(size(z, 3) ~= 3)
+%   colormap('gray')
+%end
+%title("Imaginea reconstruita FFT2D")
+
 %[~, tabel_fft2d] = proc_energie_2d(coef_fft2d, 'FFT2D');
 %panta_fft2d = regresie_energie(tabel_fft2d, 'FFT2D', 'r');
 
@@ -41,24 +48,20 @@ import wht.*
 %ylabel("y(t)")
 %plot_eroare_1d(orig, z, Fs);
 %[~, tabel_tkl1d] = proc_energie_1d(coef, 0, 'TKL');
-%panta_tkl1d = regresie_energie(tabel_tkl1d, 'TKL1D', 'g')
+%panta_tkl1d = regresie_energie(tabel_tkl1d, 'TKL1D', 'g');
 
 %% TKL 2D
 % [orig, coef_tkl2d, Vm, xM, xdim, ydim] = tkl2d(filePath);
-% z = inv_tkl2d(coef, Vm, xM, xdim, ydim);
+% z = inv_tkl2d(coef_tkl2d, Vm, xM, xdim, ydim);
 % figure
 % imagesc(uint8(z))
 % if(size(z, 3) ~= 3)
 %     colormap('gray')
 % end
-% figure
-% imagesc(abs(orig))
-% if(size(orig, 3) ~= 3)
-%     colormap('gray')
-% end
-%plot_eroare_2d(uint8(orig), uint8(z))
-%[~, tabel_tkl2d] = proc_energie_2d(coef_tkl2d, 'TKL');
-%panta_tkl2d = regresie_energie(tabel_tkl2d, 'TKL2D', 'g')
+% title("Imagine reconstruita TKL2D")
+% plot_eroare_2d(double(orig), double(z))
+% [~, tabel_tkl2d] = proc_energie_2d(coef_tkl2d, 'TKL');
+% panta_tkl2d = regresie_energie(tabel_tkl2d, 'TKL2D', 'g');
 
 %% Haar 1D
 %[orig, y, huri, r, Fs] = haar1d(filePath, 10000);
@@ -76,48 +79,47 @@ import wht.*
 %panta_haar1d = regresie_energie(tabel_haar1d, 'Haar1D', 'b')
 
 %% Haar 2D
-%[orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
-%z = inv_haar2d(huri, r, huri_col);
-%[~, tabel_haar2d] = proc_energie_2d(coef, 'Haar2D');
-%figure
-%imagesc(uint8(z))
-%panta_haar2d = regresie_energie(tabel_haar2d, 'Haar2D', 'b');
+[orig, coef, huri, r, huri_col, r_col] = haar2d(filePath);
+z = inv_haar2d(huri, r, huri_col);
+plot_eroare_2d(double(orig), double(z))
+[~, tabel_haar2d] = proc_energie_2d(coef, 'Haar2D');
+figure
+imagesc(uint8(z))
+if(size(z, 3) ~= 3)
+   colormap('gray')
+end
+title('Imaginea recosntruita Haar2D')
+panta_haar2d = regresie_energie(tabel_haar2d, 'Haar2D', 'b');
 
 %% Wht 1D
-[audio, y, Fs, walshMatrix]  = wht1d(filePath, 1024);
-z = inv_wht1d(y, walshMatrix);
-T = 1 / Fs;
-figure
-t = (0:length(z(1:length(audio)))-1)*T;
-plot(t,z(1:length(audio)))
-title("Semnalul audio reconstruit")
-xlabel("t (seconds)")
-ylabel("y(t)")
-z = z(1:length(audio));
-[~, tabel_wht1d] = proc_energie_1d(y, 0, 'WHT1D');
-panta_wht1d = regresie_energie(tabel_wht1d, 'WHT1D', 'm')
+%[audio, y, Fs, walshMatrix]  = wht1d(filePath, 1024);
+%z = inv_wht1d(y, walshMatrix);
+%T = 1 / Fs;
+%figure
+%t = (0:length(z(1:length(audio)))-1)*T;
+%plot(t,z(1:length(audio)))
+%title("Semnalul audio reconstruit")
+%xlabel("t (seconds)")
+%ylabel("y(t)")
+%z = z(1:length(audio));
+%[~, tabel_wht1d] = proc_energie_1d(y, 0, 'WHT1D');
+%panta_wht1d = regresie_energie(tabel_wht1d, 'WHT1D', 'm')
 
-norm(audio-z)
+%norm(audio-z)
 
 
 %% Wht 2D
-%[y, orig, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig] = wht2d(filePath);
-%size(y)
-%z = inv_wht2d(y, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig);
-%z = z';
-%plot orig image
-%figure
-% imagesc(abs(orig))
-% colormap('gray')
-% title('Imaginea originala')
-% plot reconstructed image
-% figure
-% imagesc(abs(z))
-% colormap('gray')
-% title('Imaginea recosntruita TWHT2D')
-%plot_eroare_2d(orig, z)
-%[energie, tabel_wht2d] = proc_energie_2d(y, 'WHT2D');
-%panta_wht2d = regresie_energie(tabel_wht2d, 'WHT2D', 'm')
+% [y, orig, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig] = wht2d(filePath);
+% z = inv_wht2d(y, walshMatrix_col, walshMatrix_row, xdim_padded, ydim_padded, xdim_orig, ydim_orig);
+%  figure
+%  imagesc(abs(uint8(z)))
+%  if(size(z, 3) ~= 3)
+%      colormap('gray')
+%  end
+%  title('Imaginea recosntruita TWHT2D')
+% plot_eroare_2d(double(orig), double(z));
+% [energie, tabel_wht2d] = proc_energie_2d(y, 'WHT2D');
+% panta_wht2d = regresie_energie(tabel_wht2d, 'WHT2D', 'm');
 
 %% Toate regresiile pe acelasi grafic
 %trebuie comentat figure-ul si partea de titlu din functia

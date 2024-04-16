@@ -90,6 +90,11 @@ classdef    haar
             imagine = imread(image);
             imagine = double(imagine);
             [~, ~, ch] = size(imagine);
+            if ch > 1
+                canale = ['R', 'G', 'B'];
+            else
+                canale = [""];
+            end
             
             for i = 1 : ch
                 [coef{i}, huri{i}, r{i}, coef_col{i}, huri_col{i}, r_col{i}] = haar.proc_haar2d(imagine(:, :, i));
@@ -99,9 +104,9 @@ classdef    haar
             figure
             for i = 1 : ch
                 subplot(2, ch, i)
-                utils.plot_1d_segmente(coef_col{i}, "Haar2D")
+                utils.plot_1d_segmente(coef_col{i}, "Haar2D", canale(i))
                 subplot(2, ch, i+ch)
-                utils.plot_1d_segmente(coef{i}, "Haar2D")
+                utils.plot_1d_segmente(coef{i}, "Haar2D", canale(i))
                 coef{i} = cell2mat(coef{i});
             end
         end
