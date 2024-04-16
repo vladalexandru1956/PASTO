@@ -1,9 +1,13 @@
 *
 !.gitignore
 !main.m
-!functii.m
 !haar.m
 !tfft.m
 !wht.m
 !tkl.m
 !utils.m
+!README.md
+!Samples
+!Lena_standard.bmp
+!Lena_standard_bw.bmp
+!sound_05.wav

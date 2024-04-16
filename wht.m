@@ -63,6 +63,11 @@ classdef    wht
             %make the image only one channel
             [xdim, ydim, ch] = size(orig);
             % If image is RGB, skip for now
+            if ch > 1
+                canale = ['R', 'G', 'B'];
+            else
+                canale = [""];
+            end
             
             imagine = double(orig);
             
@@ -144,9 +149,9 @@ classdef    wht
             figure
             for i = 1 : ch
                  subplot(2, ch, i)
-                 utils.plot_1d_segmente(y_col{i}, "WHT2D")
+                 utils.plot_1d_segmente(y_col{i}, "WHT2D", canale(i))
                  subplot(2, ch, i+ch)
-                 utils.plot_1d_segmente(y{i}, "WHT2D")
+                 utils.plot_1d_segmente(y{i}, "WHT2D", canale(i))
                  y{i} = cell2mat(y{i});
             end
         end
@@ -172,7 +177,7 @@ classdef    wht
                 for i = 1:size(x_mat, 2)  % Operating on columns
                     x_mat(:, i) = inverseMatrix_row * x_mat(:, i);
                 end
-                y = uint8(x_mat)';
+                y = double(x_mat)';
                 y = y(1:xdim_orig, 1:ydim_orig);
             elseif size(x_mat, 3) == 3
                 for c = 1 : 3
@@ -186,7 +191,7 @@ classdef    wht
                     for i = 1:size(x_mat_c, 2)  % Operating on columns
                         x_mat_c(:, i) = inverseMatrix_row * x_mat_c(:, i);
                     end
-                    y_c{c} = uint8(x_mat_c)';
+                    y_c{c} = double(x_mat_c)';
                     y_c{c} = y_c{c}(1:xdim_orig, 1:ydim_orig);
                 end
                 y = cat(3, y_c{1}, y_c{2}, y_c{3});

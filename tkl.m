@@ -6,7 +6,7 @@ classdef    tkl
             [p_x, ~] = xcorr(x_centr, 'biased');
             
             R = fftshift(p_x); % in mod interesant, norma intre original si reconstruit da mai mica
-            % daca fac fftshift
+                               % daca fac fftshift
             R = toeplitz(R(1 : (size(p_x) + 1) / 2));
             [V, D] = eig(R);
             
@@ -50,7 +50,13 @@ classdef    tkl
         function [imagine, y, Vm, xM, xdim, ydim] = tkl2d(image)
             imagine = imread(image);
             imagine = double(imagine);
+
             [xdim, ydim, ch] = size(imagine);
+            if ch > 1
+                canale = ['R', 'G', 'B'];
+            else
+                canale = [""];
+            end
 
             for i = 1 : ch
                 imgVec{i} = reshape(imagine(:, :, i), 1, []);
@@ -69,16 +75,11 @@ classdef    tkl
                     y{1} = y{i};
                 end
             end
-            
-     %       utils.plot_1d_segmente(y, 'TKL')
 
             figure
             for i = 1 : ch
                 subplot(ch, 1, i)
-                utils.plot_1d_segmente(y{i}, "TKL")
-            %    subplot(ch, 1, i+ch)
-            %    utils.plot_1d_segmente(coef{i}, "TKL")
-            %    coef{i} = cell2mat(coef{i});
+                utils.plot_1d_segmente(y{i}, "TKL", canale(i))
             end
         end
         

@@ -47,16 +47,9 @@ classdef    tfft
         end
         
         function y = inv_fft2d(x)
-            y = uint8(ifft2(x));
-            y = real(y);
-            
-            figure
-            title("Imaginea reconstruita")
-            imagesc(abs(y))
-            
-            if(size(y, 3) ~= 3)
-                colormap('gray')
-            end
+       %     y = uint8(ifft2(x));
+            y = real(ifft2(x));
+          
         end
     end
 end
