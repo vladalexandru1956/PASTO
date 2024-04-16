@@ -1,9 +1,9 @@
 *
 !.gitignore
 !main.m
-!functii.m
 !haar.m
 !tfft.m
 !wht.m
 !tkl.m
 !utils.m
+README.md
